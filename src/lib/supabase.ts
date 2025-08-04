@@ -6,7 +6,13 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 // Create a dummy client if environment variables are not available
 export const supabase = supabaseUrl && supabaseAnonKey 
   ? createClient(supabaseUrl, supabaseAnonKey)
-  : createClient('https://dummy.supabase.co', 'dummy-key');
+  : createClient('https://dummy.supabase.co', 'dummy-key', {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+        detectSessionInUrl: false
+      }
+    });
 
 // Export the environment check for debugging
 export const hasValidCredentials = !!(supabaseUrl && supabaseAnonKey);
