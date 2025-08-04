@@ -15,8 +15,8 @@ import { Signup } from './pages/Signup';
 import { PasswordProtection } from './components/PasswordProtection';
 
 function App() {
-  // You can change this password to whatever you want
-  const DEMO_PASSWORD = 'darna2024';
+  // Password from environment variable or fallback
+  const DEMO_PASSWORD = import.meta.env.VITE_DEMO_PASSWORD || 'demo2024';
 
   return (
     <PasswordProtection password={DEMO_PASSWORD}>
