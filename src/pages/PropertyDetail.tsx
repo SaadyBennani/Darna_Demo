@@ -1,9 +1,85 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, MapPin, Users, Bed, Bath, Wifi, Car, Star, Mail, Phone } from 'lucide-react';
+import { ArrowLeft, MapPin, Users, Bed, Bath, Wifi, Car, Star, Mail, Phone, Clock, Calendar } from 'lucide-react';
 import { supabase, Property } from '../lib/supabase';
 import { useLanguage } from '../contexts/LanguageContext';
 import toast from 'react-hot-toast';
+
+// Demo property data with comprehensive details
+const demoProperties = {
+  '1': {
+    id: '1',
+    title: 'Luxury Riad with Private Pool - Marrakech',
+    title_fr: 'Riad de Luxe avec Piscine Privée - Marrakech',
+    description: 'Experience ultimate luxury in this stunning riad featuring a private plunge pool, traditional hammam, and rooftop terrace with panoramic views of the Atlas Mountains. This beautifully restored 19th-century riad combines authentic Moroccan architecture with modern luxury amenities. Located in the heart of the historic medina, you\'ll be just minutes from the famous Jemaa el-Fnaa square, souks, and major attractions.\n\n• Private plunge pool with traditional tilework\n• Traditional hammam spa experience\n• Rooftop terrace with Atlas Mountain views\n• Authentic Moroccan courtyard design\n• Modern amenities with traditional charm\n• 24/7 concierge service',
+    description_fr: 'Découvrez le luxe ultime dans ce riad époustouflant avec piscine privée, hammam traditionnel, et terrasse sur le toit avec vue panoramique sur les montagnes de l\'Atlas.',
+    location: 'Marrakech Medina, Morocco',
+    location_fr: 'Médina de Marrakech, Maroc',
+    price_per_night: 150,
+    bedrooms: 4,
+    bathrooms: 3,
+    max_guests: 8,
+    amenities: ['Private Pool', 'Traditional Hammam', 'Rooftop Terrace', 'WiFi', 'Air Conditioning', 'Breakfast Included', 'Atlas Mountain Views', 'Traditional Décor'],
+    amenities_fr: ['Piscine Privée', 'Hammam Traditionnel', 'Terrasse sur le Toit', 'WiFi', 'Climatisation', 'Petit-déjeuner Inclus', 'Vue sur l\'Atlas', 'Décor Traditionnel'],
+    images: [
+      'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=800',
+      'https://images.pexels.com/photos/1571453/pexels-photo-1571453.jpeg?auto=compress&cs=tinysrgb&w=800',
+      'https://images.pexels.com/photos/1571468/pexels-photo-1571468.jpeg?auto=compress&cs=tinysrgb&w=800',
+      'https://images.pexels.com/photos/1571458/pexels-photo-1571458.jpeg?auto=compress&cs=tinysrgb&w=800',
+      'https://images.pexels.com/photos/1571462/pexels-photo-1571462.jpeg?auto=compress&cs=tinysrgb&w=800',
+      'https://images.pexels.com/photos/1571455/pexels-photo-1571455.jpeg?auto=compress&cs=tinysrgb&w=800',
+      'https://images.pexels.com/photos/1571464/pexels-photo-1571464.jpeg?auto=compress&cs=tinysrgb&w=800',
+      'https://images.pexels.com/photos/1571457/pexels-photo-1571457.jpeg?auto=compress&cs=tinysrgb&w=800',
+      'https://images.pexels.com/photos/1571466/pexels-photo-1571466.jpeg?auto=compress&cs=tinysrgb&w=800',
+      'https://images.pexels.com/photos/1571459/pexels-photo-1571459.jpeg?auto=compress&cs=tinysrgb&w=800'
+    ],
+    locationDetails: {
+      landmarks: ['Jemaa el-Fnaa (5 min walk)', 'Koutoubia Mosque (8 min walk)', 'Bahia Palace (10 min walk)', 'Majorelle Gardens (15 min drive)'],
+      transport: ['Marrakech Menara Airport (15 min drive)', 'Medina Bus Station (5 min walk)', 'Taxi stand (2 min walk)'],
+      nearby: ['Traditional souks (3 min walk)', 'Restaurants & cafes (2 min walk)', 'ATM & banks (5 min walk)']
+    },
+    owner_id: 'demo',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    is_active: true
+  },
+  '2': {
+    id: '2',
+    title: 'Beachfront Villa with Ocean Views',
+    title_fr: 'Villa en Front de Mer avec Vue sur l\'Océan',
+    description: 'Stunning beachfront villa in Essaouira with direct access to the Atlantic Ocean. This modern villa features contemporary design with traditional Moroccan elements, offering the perfect blend of luxury and authenticity. Enjoy breathtaking sunset views from your private terrace while listening to the waves.\n\n• Direct beach access with private path\n• Infinity pool overlooking the ocean\n• Modern kitchen with local ingredients\n• Private parking and security\n• Outdoor dining area with BBQ\n• Surf equipment storage available',
+    description_fr: 'Villa époustouflante en front de mer à Essaouira avec accès direct à l\'océan Atlantique.',
+    location: 'Essaouira Beach, Morocco',
+    location_fr: 'Plage d\'Essaouira, Maroc',
+    price_per_night: 180,
+    bedrooms: 5,
+    bathrooms: 4,
+    max_guests: 10,
+    amenities: ['Beachfront Location', 'Private Terrace', 'Ocean Views', 'WiFi', 'Modern Kitchen', 'Parking', 'BBQ Area', 'Infinity Pool'],
+    amenities_fr: ['Emplacement Front de Mer', 'Terrasse Privée', 'Vue sur l\'Océan', 'WiFi', 'Cuisine Moderne', 'Parking', 'Zone BBQ'],
+    images: [
+      'https://images.pexels.com/photos/1571453/pexels-photo-1571453.jpeg?auto=compress&cs=tinysrgb&w=800',
+      'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=800',
+      'https://images.pexels.com/photos/1571468/pexels-photo-1571468.jpeg?auto=compress&cs=tinysrgb&w=800',
+      'https://images.pexels.com/photos/1571458/pexels-photo-1571458.jpeg?auto=compress&cs=tinysrgb&w=800',
+      'https://images.pexels.com/photos/1571462/pexels-photo-1571462.jpeg?auto=compress&cs=tinysrgb&w=800',
+      'https://images.pexels.com/photos/1571455/pexels-photo-1571455.jpeg?auto=compress&cs=tinysrgb&w=800',
+      'https://images.pexels.com/photos/1571464/pexels-photo-1571464.jpeg?auto=compress&cs=tinysrgb&w=800',
+      'https://images.pexels.com/photos/1571457/pexels-photo-1571457.jpeg?auto=compress&cs=tinysrgb&w=800',
+      'https://images.pexels.com/photos/1571466/pexels-photo-1571466.jpeg?auto=compress&cs=tinysrgb&w=800',
+      'https://images.pexels.com/photos/1571459/pexels-photo-1571459.jpeg?auto=compress&cs=tinysrgb&w=800'
+    ],
+    locationDetails: {
+      landmarks: ['Essaouira Medina (10 min walk)', 'Skala de la Ville (15 min walk)', 'Essaouira Beach (direct access)', 'Port of Essaouira (20 min walk)'],
+      transport: ['Essaouira Airport (20 min drive)', 'Bus station (15 min walk)', 'Taxi service available'],
+      nearby: ['Surf schools (5 min walk)', 'Seafood restaurants (10 min walk)', 'Local markets (15 min walk)']
+    },
+    owner_id: 'demo',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    is_active: true
+  }
+};
 
 export function PropertyDetail() {
   const { id } = useParams<{ id: string }>();
@@ -27,8 +103,17 @@ export function PropertyDetail() {
         .eq('is_active', true)
         .single();
 
-      if (error) throw error;
-      setProperty(data);
+      if (error) {
+        // Use demo data if Supabase is not available
+        const demoProperty = demoProperties[propertyId as keyof typeof demoProperties];
+        if (demoProperty) {
+          setProperty(demoProperty as Property);
+        } else {
+          throw new Error('Property not found');
+        }
+      } else {
+        setProperty(data);
+      }
     } catch (error) {
       console.error('Error fetching property:', error);
       toast.error(t('common.error'));
@@ -71,7 +156,21 @@ export function PropertyDetail() {
     'Parking': Car,
     'Air Conditioning': Star,
     'Climatisation': Star,
+    'Private Pool': Star,
+    'Traditional Hammam': Star,
+    'Rooftop Terrace': Star,
+    'Breakfast Included': Star,
+    'Atlas Mountain Views': Star,
+    'Beachfront Location': Star,
+    'Private Terrace': Star,
+    'Ocean Views': Star,
+    'Modern Kitchen': Star,
+    'BBQ Area': Star,
+    'Infinity Pool': Star,
   };
+
+  // Get location details for demo properties
+  const locationDetails = (property as any).locationDetails;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -89,7 +188,7 @@ export function PropertyDetail() {
       {/* Property Images */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-2">
             {/* Main Image */}
             <div className="lg:col-span-2">
               <img
@@ -101,8 +200,8 @@ export function PropertyDetail() {
             </div>
             
             {/* Thumbnail Images */}
-            <div className="grid grid-cols-2 lg:grid-cols-1 gap-2">
-              {property.images.slice(1, 3).map((image, index) => (
+            <div className="grid grid-cols-2 lg:grid-cols-1 gap-2 lg:col-span-2">
+              {property.images.slice(1, 5).map((image, index) => (
                 <img
                   key={index}
                   src={image}
@@ -111,16 +210,16 @@ export function PropertyDetail() {
                   onClick={() => setSelectedImageIndex(index + 1)}
                 />
               ))}
-              {property.images.length > 3 && (
+              {property.images.length > 5 && (
                 <div className="relative">
                   <img
-                    src={property.images[3]}
+                    src={property.images[5]}
                     alt={`${title} more`}
                     className="w-full h-32 lg:h-[11.5rem] object-cover cursor-pointer rounded-lg"
                   />
                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-lg">
                     <span className="text-white font-semibold">
-                      +{property.images.length - 3} more
+                      +{property.images.length - 5} more
                     </span>
                   </div>
                 </div>
@@ -176,6 +275,57 @@ export function PropertyDetail() {
               <p className="text-gray-700 leading-relaxed whitespace-pre-line">{description}</p>
             </div>
 
+            {/* Location Details */}
+            {locationDetails && (
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-4">Location & Transportation</h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div>
+                    <h3 className="font-semibold text-gray-900 mb-3 flex items-center">
+                      <MapPin className="w-4 h-4 mr-2" />
+                      Nearby Landmarks
+                    </h3>
+                    <ul className="space-y-2 text-sm text-gray-600">
+                      {locationDetails.landmarks.map((landmark: string, index: number) => (
+                        <li key={index} className="flex items-center">
+                          <div className="w-2 h-2 bg-orange-500 rounded-full mr-3"></div>
+                          {landmark}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 mb-3 flex items-center">
+                      <Car className="w-4 h-4 mr-2" />
+                      Transportation
+                    </h3>
+                    <ul className="space-y-2 text-sm text-gray-600">
+                      {locationDetails.transport.map((transport: string, index: number) => (
+                        <li key={index} className="flex items-center">
+                          <div className="w-2 h-2 bg-orange-500 rounded-full mr-3"></div>
+                          {transport}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 mb-3 flex items-center">
+                      <Star className="w-4 h-4 mr-2" />
+                      Nearby Amenities
+                    </h3>
+                    <ul className="space-y-2 text-sm text-gray-600">
+                      {locationDetails.nearby.map((amenity: string, index: number) => (
+                        <li key={index} className="flex items-center">
+                          <div className="w-2 h-2 bg-orange-500 rounded-full mr-3"></div>
+                          {amenity}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Amenities */}
             <div className="bg-white rounded-xl shadow-sm p-6">
               <h2 className="text-xl font-bold text-gray-900 mb-4">{t('property.amenities')}</h2>
@@ -189,6 +339,15 @@ export function PropertyDetail() {
                     </div>
                   );
                 })}
+              </div>
+            </div>
+
+            {/* Reviews Section (Placeholder for future) */}
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-4">Guest Reviews</h2>
+              <div className="text-center py-8 text-gray-500">
+                <Star className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                <p>Reviews coming soon! This feature will include guest ratings and detailed feedback.</p>
               </div>
             </div>
           </div>
